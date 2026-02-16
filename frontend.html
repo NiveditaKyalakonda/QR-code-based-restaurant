@@ -1,0 +1,10 @@
+fetch("http://localhost:3000/send-order", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    customerNumber: "+919353515689",
+    kitchenNumber: "+919353515689",
+    orderItems: cart.map(i => i.name).join(", "),
+    total: cart.reduce((s,i)=>s+i.price,0)
+  })
+});

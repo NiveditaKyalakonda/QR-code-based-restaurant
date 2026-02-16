@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>💳 Royal Payment</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      background-image: url('restaurant-bg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.75);
+      z-index: -1;
+    }
+
+    .payment-box {
+      background: rgba(40,0,0,0.9);
+      padding: 35px;
+      border-radius: 20px;
+      text-align: center;
+      width: 450px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.7);
+      border: 3px solid gold;
+      animation: fadeUp 1s ease;
+    }
+
+    h1 {
+      font-size: 34px;
+      color: gold;
+      text-shadow: 0 0 15px rgba(255,215,0,0.9);
+      margin-bottom: 25px;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 8px rgba(255,215,0,0.6); }
+      to { text-shadow: 0 0 20px rgba(255,215,0,1); }
+    }
+
+    .amount {
+      font-size: 26px;
+      margin: 15px 0;
+      font-weight: bold;
+      color: #ffdf6c;
+      text-shadow: 0 0 8px rgba(255,215,0,0.8);
+      animation: pulseAmount 2s infinite;
+    }
+
+    @keyframes pulseAmount {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 5px;
+      text-align: left;
+      font-weight: bold;
+      color: gold;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      margin-bottom: 15px;
+      background: rgba(255,255,255,0.2);
+      color: #000;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      transform: scale(1.03);
+      box-shadow: 0 0 15px gold;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 15px;
+      background: linear-gradient(45deg, #8B0000, #B22222);
+      color: gold;
+      font-weight: bold;
+      font-size: 18px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      margin-top: 10px;
+    }
+
+    button::before {
+      content: "";
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: rgba(255,255,255,0.15);
+      transform: skewX(-25deg);
+      transition: 0.6s;
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
+    button:hover {
+      transform: scale(1.07);
+      box-shadow: 0 0 25px rgba(255,215,0,0.6);
+    }
+
+    .msg {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 12px;
+      font-weight: bold;
+      text-align: left;
+      line-height: 1.5;
+      max-height: 300px;
+      overflow-y: auto;
+      animation: slideIn 0.8s forwards;
+    }
+
+    #userMsg {
+      background: rgba(255,215,0,0.15);
+      color: #fff;
+      border-left: 5px solid gold;
+    }
+
+    #kitchenMsg {
+      background: rgba(255,0,0,0.2);
+      color: #fff;
+      border-left: 5px solid #ff4444;
+      margin-top: 15px;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .back {
+      margin-top: 15px;
+      display: block;
+      color: #ffdf6c;
+      cursor: pointer;
+      text-decoration: underline;
+      transition: 0.3s;
+    }
+
+    .back:hover {
+      color: gold;
+      text-shadow: 0 0 12px rgba(255,215,0,0.8);
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <div class="payment-box">
+    <h1>💳 Royal Payment</h1>
+    <div class="amount" id="amountBox">Total: ₹0</div>
+
+    <label for="method">Payment Method</label>
+    <select id="method">
+      <option value="upi">UPI</option>
+      <option value="card">Credit/Debit Card</option>
+      <option value="wallet">Wallet</option>
+      <option value="cash">Cash</option>
+    </select>
+
+    <label for="password">Enter Payment Password</label>
+    <input type="password" id="password" placeholder="Enter your password">
+
+    <button onclick="makePayment()">Pay Securely</button>
+
+    <div class="msg" id="userMsg"></div>
+    <div class="msg" id="kitchenMsg"></div>
+
+    <span class="back" onclick="goBack()">⬅️ Back to Cart</span>
+  </div>
+
+  <script>
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    document.getElementById("amountBox").innerText = "Total: ₹" + total;
+
+    function makePayment() {
+      const method = document.getElementById("method").value;
+      const password = document.getElementById("password").value;
+
+      if (!password) {
+        alert("⚠️ Please enter your password!");
+        return;
+      }
+
+      if (cart.length === 0) {
+        alert("⚠️ Your cart is empty!");
+        return;
+      }
+
+      // Build items list
+      let itemsList = "";
+      cart.forEach((item, index) => {
+        itemsList += `${index+1}. ${item.name} - ₹${item.price}\n`;
+      });
+
+      // User mobile message
+      const userMsg = document.getElementById("userMsg");
+      userMsg.style.display = "block";
+      userMsg.innerText = `📱 Payment Successful via ${method.toUpperCase()} ✅\n` +
+                          `Your royal order is confirmed! 🍽️\n\n` +
+                          `Ordered Items:\n${itemsList}Total: ₹${total}\n` +
+                          `Your order will arrive shortly!`;
+
+      // Kitchen message
+      const kitchenMsg = document.getElementById("kitchenMsg");
+      kitchenMsg.style.display = "block";
+      kitchenMsg.innerText = `🍗 New Order Received!\n` +
+                             `Prepare the following items:\n${itemsList}Total: ₹${total}`;
+
+      // Clear cart
+      localStorage.removeItem("cart");
+
+      // Redirect to chicken page after 5 sec
+      setTimeout(() => {
+        window.location.href = "chicken.html";
+      }, 5000);
+    }
+
+    function goBack() {
+      window.location.href = "cart.html";
+    }
+  </script>
+</body>
+</html>

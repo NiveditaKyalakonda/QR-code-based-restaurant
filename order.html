@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Place Your Order — Royal Palace Dining</title>
+</head>
+<body>
+
+  <h2>🍽️ Place Your Order</h2>
+
+  <form id="orderForm">
+    <input type="text" id="name" placeholder="Enter your name" required><br><br>
+    <input type="email" id="email" placeholder="Enter your email" required><br><br>
+    <input type="text" id="phone" placeholder="Enter your phone"><br><br>
+    <input type="text" id="table" placeholder="Table number" required><br><br>
+
+    <h3>Order Item</h3>
+    <input type="text" id="item" placeholder="Item name" required><br><br>
+    <input type="number" id="qty" placeholder="Quantity" required><br><br>
+    <input type="number" id="price" placeholder="Price" required><br><br>
+
+    <button type="submit">Place Order</button>
+  </form>
+
+  <script>
+    document.getElementById("orderForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const itemName = document.getElementById("item").value;
+      const qty = parseInt(document.getElementById("qty").value);
+      const price = parseFloat(document.getElementById("price").value);
+
+      const totalAmount = qty * price;
+
+      // ✅ Correct format for MongoDB
+      const formattedOrder = {
+        customer: {
+          name: document.getElementById("name").value,
+          email: document.getElementById("email").value,
+          phone: document.getElementById("phone").value,
+          table: document.getElementById("table").value
+        },
+        items: [
+          { name: itemName, qty: qty, price: price }
+        ],
+        total: totalAmount,
+        paymentStatus: "pending"
+      };
+
+      try {
+        const res = await fetch("http://localhost:5000/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formattedOrder)
+        });
+
+        const result = await res.json();
+        alert(result.message);
+      } catch (err) {
+        alert("❌ Error placing order");
+        console.error(err);
+      }
+    });
+  </script>
+
+</body>
+</html>
